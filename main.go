@@ -26,6 +26,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	e.GET("/health", func(c echo.Context) error {
+		// Attempt to queue incoming request
+		return c.String(http.StatusOK, "Health OK")
+	})
+
 	// Route handler for "/"
 	e.GET("/", func(c echo.Context) error {
 		// Attempt to queue incoming request
