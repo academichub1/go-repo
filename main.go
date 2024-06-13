@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	maxWorkers = 50000  // Number of worker goroutines
+	maxWorkers = 100000  // Number of worker goroutines
 	maxQueue   = 60000 // Size of request queue
 )
 
