@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	maxWorkers = 100000  // Number of worker goroutines
-	maxQueue   = 110000 // Size of request queue
+	maxWorkers = 25000  // Number of worker goroutines
+	maxQueue   = 26000 // Size of request queue
 )
 
 func main() {
