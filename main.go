@@ -35,6 +35,8 @@ func main() {
 		default:
 			return c.String(http.StatusServiceUnavailable, "Queue full. Please try again later.")
 		}
+				time.Sleep(3 * time.Second)
+
 		return c.String(http.StatusOK, "Request received and queued")
 	})
 
