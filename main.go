@@ -47,7 +47,7 @@ func main() {
 
 	// Start HTTP server
 	fmt.Println("Server is listening on port 8080")
-	e.Logger.Fatal(e.Start(":8081"))
+	e.Logger.Fatal(e.Start(":8080"))
 
 	// Wait for all workers to finish
 	wg.Wait()
@@ -66,7 +66,7 @@ func worker(queue chan *http.Request, wg *sync.WaitGroup) {
 
 func processRequest(r *http.Request) {
 	// Simulate processing time for demonstration
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(3000 * time.Millisecond)
 
 	// Prepare the response
 	response := "Request processed successfully\n"
