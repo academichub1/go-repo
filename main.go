@@ -26,8 +26,8 @@ type Claims struct {
 
 var (
 	jwtKey        = []byte("your_secret_key")
-	maxWorkers    = 25000 // Number of worker goroutines
-	maxQueue      = 26000 // Size of request queue
+	maxWorkers    = 1 // Number of worker goroutines
+	maxQueue      = 1 // Size of request queue
 	refreshTokens = map[string]string{}
 )
 
