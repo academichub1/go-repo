@@ -26,8 +26,8 @@ type Claims struct {
 
 var (
 	jwtKey        = []byte("your_secret_key")
-	maxWorkers    = 1 // Number of worker goroutines
-	maxQueue      = 1 // Size of request queue
+	maxWorkers    = 26000 // Number of worker goroutines
+	maxQueue      = 28000 // Size of request queue
 	refreshTokens = map[string]string{}
 )
 
@@ -59,6 +59,12 @@ func main() {
 
 		return c.String(http.StatusOK, "Request received and queued")
 	})
+
+		e.GET("/v2", func(c echo.Context) error {
+		time.Sleep(3000 * time.Millisecond)
+		return c.String(http.StatusOK, "Request received and queued")
+	})
+
 
 	e.POST("/login", LoginHandler)
 	e.POST("/refresh", RefreshTokenHandler)
