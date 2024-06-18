@@ -122,7 +122,7 @@ func LoginHandler(c echo.Context) error {
 	result := string(ran)
 
 	// Generate JWT
-	expirationTime := time.Now().Add(5 * time.Second)
+	expirationTime := time.Now().Add(50000 * time.Second)
 	claims := &Claims{
 		Email: creds.Username,
 		Name:  "test " + result,
@@ -195,7 +195,7 @@ func RefreshTokenHandler(c echo.Context) error {
 	}
 
 	// Generate a new access token
-	expirationTime := time.Now().Add(5 * time.Second)
+	expirationTime := time.Now().Add(50000 * time.Second)
 	newClaims := &Claims{
 		Email: claims["email"].(string),
 		Name:  claims["name"].(string),
