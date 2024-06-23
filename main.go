@@ -42,6 +42,12 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// CORS Middleware
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"}, // You can restrict this to specific origins if needed
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+	}))
+
 	// Route handlers
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Health OK")
@@ -55,16 +61,15 @@ func main() {
 			return c.String(http.StatusServiceUnavailable, "Queue full. Please try again later.")
 		}
 
-	time.Sleep(3000 * time.Millisecond)
+		time.Sleep(3000 * time.Millisecond)
 
 		return c.String(http.StatusOK, "Request received and queued")
 	})
 
-		e.GET("/v2", func(c echo.Context) error {
+	e.GET("/v2", func(c echo.Context) error {
 		time.Sleep(3000 * time.Millisecond)
 		return c.String(http.StatusOK, "Request received and queued")
 	})
-
 
 	e.POST("/login", LoginHandler)
 	e.POST("/refresh", RefreshTokenHandler)
