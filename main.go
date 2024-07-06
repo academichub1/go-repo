@@ -19,8 +19,11 @@ type Credentials struct {
 }
 
 type Claims struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email      string `json:"email"`
+	Name       string `json:"name"`
+	Id         string `json:"id"`
+	ChatAccess bool   `json:"chat_access"`
+	UserRole   string `json:"user_role"`
 	jwt.StandardClaims
 }
 
@@ -135,8 +138,11 @@ func LoginHandler(c echo.Context) error {
 	// Generate JWT
 	expirationTime := time.Now().Add(50000 * time.Second)
 	claims := &Claims{
-		Email: creds.Username,
-		Name:  "test " + result,
+		Email:      creds.Username,
+		Name:       "test " + result,
+		UserRole:   "STUDENT",
+		ChatAccess: false,
+		Id:         creds.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -154,6 +160,9 @@ func LoginHandler(c echo.Context) error {
 	refreshClaims := refreshToken.Claims.(jwt.MapClaims)
 	refreshClaims["email"] = creds.Username
 	refreshClaims["name"] = "test " + result
+	refreshClaims["chat_access"] = false
+	refreshClaims["user_role"] = "STUDENT"
+	refreshClaims["id"] = creds.Username
 	refreshClaims["exp"] = refreshExpirationTime.Unix()
 
 	refreshTokenString, err := refreshToken.SignedString(jwtKey)
@@ -208,8 +217,11 @@ func RefreshTokenHandler(c echo.Context) error {
 	// Generate a new access token
 	expirationTime := time.Now().Add(50000 * time.Second)
 	newClaims := &Claims{
-		Email: claims["email"].(string),
-		Name:  claims["name"].(string),
+		Email:      claims["email"].(string),
+		Name:       claims["name"].(string),
+		UserRole:   claims["user_role"].(string),
+		ChatAccess: claims["chat_access"].(bool),
+		Id:         claims["id"].(string),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
 		},
@@ -227,6 +239,9 @@ func RefreshTokenHandler(c echo.Context) error {
 	newRefreshClaims := newRefreshToken.Claims.(jwt.MapClaims)
 	newRefreshClaims["email"] = claims["email"]
 	newRefreshClaims["name"] = claims["name"]
+	newRefreshClaims["chat_access"] = claims["chat_access"]
+	newRefreshClaims["user_role"] = claims["user_role"]
+	newRefreshClaims["id"] = claims["id"]
 	newRefreshClaims["exp"] = refreshExpirationTime.Unix()
 
 	newRefreshTokenString, err := newRefreshToken.SignedString(jwtKey)
