@@ -34,6 +34,492 @@ var (
 	refreshTokens = map[string]string{}
 )
 
+type BaseResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Errors  []string    `json:"errors,omitempty"`
+}
+
+// Define the structs
+type CoreHomePageModel struct {
+	HomepageModel                   []GenericHomePageModel  `json:"homepageModel"`
+	LatestUpdateData                []CoreLatestUpdatedData `json:"latestUpdateData"`
+	PositionLatestUpdate            int                     `json:"positionLatestUpdate"`
+	AppBarData                      AppBarData              `json:"appBarData"`
+	ExpiryCacheInAllowedTime        string                  `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                  `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                  `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                  `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+type GenericHomePageModel struct {
+	Heading         string  `json:"heading"`
+	SubHeading      string  `json:"subHeading"`
+	Image           string  `json:"image"`
+	NextServiceLink string  `json:"nextServiceLink"`
+	ButtonText      string  `json:"buttonText"`
+	WidgetToUse     string  `json:"widgetToUse"`
+	ImageSize       float64 `json:"imageSize"`
+}
+
+type CoreLatestUpdatedData struct {
+	Heading    string `json:"heading"`
+	SubHeading string `json:"subHeading"`
+}
+
+type AppBarData struct {
+	SchoolName string `json:"schoolName"`
+	ImagePath  string `json:"imagePath"`
+}
+
+type ImageConstant struct {
+	ImageComponent string
+}
+
+var imageConstant = ImageConstant{
+	ImageComponent: "path/to/image",
+}
+
+type AssignmentModel struct {
+	Filters        []string                         `json:"filters"`
+	AssignmentData map[string][]AssignmentModelList `json:"assignmentData"`
+}
+
+// AssignmentModelList represents each assignment details.
+type AssignmentModelList struct {
+	Color           string    `json:"color"`
+	SubjectName     string    `json:"subjectName"`
+	MarksPercentage int       `json:"marksPercentage"`
+	ObtainedMarks   int       `json:"obtainedMarks"`
+	TotalMarks      int       `json:"totalMarks"`
+	Review          string    `json:"review"`
+	Position        string    `json:"position"`
+	DueDate         time.Time `json:"dueDate"`
+	Status          string    `json:"status"`
+}
+
+type AttendanceStats struct {
+	Value float64 `json:"value"` // Use float64 for numeric values
+	Color string  `json:"color"`
+}
+
+type AttendanceData struct {
+	Filter     string                                  `json:"filter"`
+	FilterData map[string]map[string][]AttendanceStats `json:"filterData"`
+}
+
+type MarksModelList struct {
+	Color           string `json:"color"`
+	SubjectName     string `json:"subjectName"`
+	MarksPercentage int    `json:"marksPercentage"`
+	ObtainedMarks   int    `json:"obtainedMarks"`
+	TotalMarks      int    `json:"totalMarks"`
+	Review          string `json:"review"`
+	Position        string `json:"position"`
+	TestDate        string `json:"testDate"`
+	Attendance      string `json:"attendance"`
+}
+
+type MarksModel struct {
+	Filters   []string                    `json:"filters"`
+	MarksData map[string][]MarksModelList `json:"marksData"`
+}
+
+type AcademicStatsButton struct {
+	Text       string `json:"text"`
+	ImagePath  string `json:"imagePath"`
+	VectorPath string `json:"vectorPath"`
+	SubText    string `json:"subText"`
+	RouteNext  string `json:"routeNext"`
+}
+
+type AcademicStatsModel struct {
+	Test                            string                `json:"test"`
+	AttendanceData                  AttendanceData        `json:"attendanceData"`
+	MarksModel                      MarksModel            `json:"marksModel"`
+	AttendanceStatsButton           []AcademicStatsButton `json:"attendanceStatsButton"`
+	ExpiryCacheInAllowedTime        string                `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+func fillGenericAcademicStatsModel() AcademicStatsModel {
+	return AcademicStatsModel{
+		Test: "",
+		AttendanceData: AttendanceData{
+			Filter: "Weekly",
+			FilterData: map[string]map[string][]AttendanceStats{
+				"Weekly": {
+					"Present": {{Value: 20.0, Color: "#4CAF50FF"}},
+					"Absent":  {{Value: 30.0, Color: "#F44336FF"}},
+					"Late":    {{Value: 40.0, Color: "#FFEB3BFF"}},
+				},
+				"Monthly": {
+					"Present": {{Value: 40.0, Color: "#4CAF50FF"}},
+					"Absent":  {{Value: 50.0, Color: "#F44336FF"}},
+					"Late":    {{Value: 10.0, Color: "#FFEB3BFF"}},
+				},
+				"Complete Session": {
+					"Present": {{Value: 30.0, Color: "#4CAF50FF"}},
+					"Absent":  {{Value: 50.0, Color: "#F44336FF"}},
+					"Late":    {{Value: 20.0, Color: "#FFEB3BFF"}},
+				},
+			},
+		},
+		MarksModel: MarksModel{
+			Filters: []string{"UT1", "UT2"},
+			MarksData: map[string][]MarksModelList{
+				"UT1": {
+					{
+						Color:           "#FAD5A5",
+						SubjectName:     "Math",
+						MarksPercentage: 15,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#4CAF50",
+						SubjectName:     "Science",
+						MarksPercentage: 10,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#FF9800",
+						SubjectName:     "History",
+						MarksPercentage: 0,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#E91E63",
+						SubjectName:     "English",
+						MarksPercentage: 0,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#2196F3",
+						SubjectName:     "Geography",
+						MarksPercentage: 0,
+						ObtainedMarks:   0,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "ABSENT",
+					},
+					{
+						Color:           "#FF5722",
+						SubjectName:     "Physics",
+						MarksPercentage: 0,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#9C27B0",
+						SubjectName:     "Chemistry",
+						MarksPercentage: 0,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#795548",
+						SubjectName:     "Biology",
+						MarksPercentage: 0,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+				},
+				"UT2": {
+					{
+						Color:           "#FFEB3BFF",
+						SubjectName:     "Math",
+						MarksPercentage: 100,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#4CAF50",
+						SubjectName:     "Science",
+						MarksPercentage: 89,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#FF9800",
+						SubjectName:     "History",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#E91E63",
+						SubjectName:     "English",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#2196F3",
+						SubjectName:     "Geography",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#FF5722",
+						SubjectName:     "Physics",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#9C27B0",
+						SubjectName:     "Chemistry",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+					{
+						Color:           "#795548",
+						SubjectName:     "Biology",
+						MarksPercentage: 20,
+						ObtainedMarks:   20,
+						TotalMarks:      100,
+						Review:          "Satisfactory",
+						Position:        "In Last 10%",
+						TestDate:        "2024-06-02",
+						Attendance:      "PRESENT",
+					},
+				},
+			},
+		},
+		AttendanceStatsButton: []AcademicStatsButton{
+			{
+				Text:       "Completed Assignment",
+				ImagePath:  "assets/images/assignment_check.svg",
+				VectorPath: "assets/images/vector_right.svg",
+				SubText:    "Check all your assignments here",
+				RouteNext:  "/detailed-assignment",
+			},
+			{
+				Text:       "Detailed Marks",
+				ImagePath:  "assets/images/assignment_check.svg",
+				VectorPath: "assets/images/vector_right.svg",
+				SubText:    "Check all subject Marks here",
+				RouteNext:  "/detailed-marks",
+			},
+		},
+		ExpiryCacheInAllowedTime:        "1",
+		ExpiryCacheInAllowedTimeUnit:    "hour",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
+// fillAssignmentModel creates and returns an AssignmentModel.
+func fillAssignmentModel() AssignmentModel {
+	layout := "2006-01-02"
+	dueDate, _ := time.Parse(layout, "2024-08-20")
+
+	return AssignmentModel{
+		Filters: []string{"QUARTER1", "QUARTER2"},
+		AssignmentData: map[string][]AssignmentModelList{
+			"QUARTER1": {
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "Math",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "SUBMITTED",
+				},
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "English",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "SUBMITTED",
+				},
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "Hindi",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "SUBMITTED",
+				},
+			},
+			"QUARTER2": {
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "Sanskrit",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "NOT SUBMITTED",
+				},
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "English",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "SUBMITTED",
+				},
+				{
+					Color:           "#FAD5A5",
+					SubjectName:     "SST",
+					MarksPercentage: 15,
+					ObtainedMarks:   20,
+					TotalMarks:      100,
+					Review:          "Satisfactory",
+					Position:        "In Last 10%",
+					DueDate:         dueDate,
+					Status:          "SUBMITTED",
+				},
+			},
+		},
+	}
+}
+
+// Fill the CoreHomePageModel
+func fillGenericHomePageModelUser1() CoreHomePageModel {
+	return CoreHomePageModel{
+		HomepageModel: []GenericHomePageModel{
+			{
+				Heading:         "School Updates & News Exclusive For You",
+				SubHeading:      "School Updates & News Exclusive For You School Updates & News Exclusive For You",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "again",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
+			{
+				Heading:         "Outstanding Leaves Outstanding Leaves",
+				SubHeading:      "View & apply leaves here",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "again",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D2",
+				ImageSize:       0.1,
+			},
+			{
+				Heading:         "Homework",
+				SubHeading:      "Do check all homework related stuff here",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "again",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
+		},
+		LatestUpdateData: []CoreLatestUpdatedData{
+			{
+				Heading:    "16",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+			{
+				Heading:    "16",
+				SubHeading: "Attendance",
+			},
+			{
+				Heading:    "16",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+			{
+				Heading:    "16",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+		},
+		PositionLatestUpdate: 2,
+		AppBarData: AppBarData{
+			SchoolName: "SVCC Public School Test School",
+			ImagePath:  "assets/images/Image_componentV2.png",
+		},
+		ExpiryCacheInAllowedTime:        "1",
+		ExpiryCacheInAllowedTimeUnit:    "hour",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
 func main() {
 	// Create a buffered channel to queue incoming requests with capacity maxQueue
 	queue := make(chan *http.Request, maxQueue)
@@ -76,6 +562,11 @@ func main() {
 
 	e.POST("/login", LoginHandler)
 	e.POST("/refresh", RefreshTokenHandler)
+	e.GET("/homepage", HomePageHandler)
+
+	e.GET("/academic-stats", AcademicStatsHandler)
+
+	e.GET("/academic-stats/assignment", AssignmentStatsHandler)
 
 	// Start worker pool
 	var wg sync.WaitGroup
@@ -260,5 +751,217 @@ func RefreshTokenHandler(c echo.Context) error {
 		"refresh_expires": refreshExpirationTime.Format(time.RFC3339),
 	}
 
+	return c.JSON(http.StatusOK, response)
+}
+
+// HomePageHandler handles requests to the home page and checks the token in the Authorization header
+func HomePageHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillGenericHomePageModelUser1()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+// HomePageHandler handles requests to the home page and checks the token in the Authorization header
+func AcademicStatsHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillGenericAcademicStatsModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func AssignmentStatsHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillAssignmentModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
 	return c.JSON(http.StatusOK, response)
 }
