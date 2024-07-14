@@ -18,6 +18,10 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
+type CalendarReq struct {
+	SelectedDate string `json:"selected_date"`
+}
+
 type Claims struct {
 	Email      string `json:"email"`
 	Name       string `json:"name"`
@@ -200,6 +204,65 @@ type InformationDetailsModel struct {
 	MotherNameValue string `json:"motherNameValue"`
 	AddressText     string `json:"addressText"`
 	AddressValue    string `json:"addressValue"`
+}
+
+type EventModel struct {
+	Events []string `json:"events"`
+}
+
+type HolidayModel struct {
+	Name string `json:"name"`
+}
+
+type TimetableModel struct {
+	Period         string `json:"period"`
+	Subject        string `json:"subject"`
+	SubjectTeacher string `json:"subjectTeacher"`
+	StartTime      string `json:"startTime"`
+	EndTime        string `json:"endTime"`
+}
+
+type DateModel struct {
+	Events                          map[string]EventModel       `json:"events"`
+	Holidays                        map[string][]HolidayModel   `json:"holidays"`
+	TimeTable                       map[string][]TimetableModel `json:"timeTable"`
+	Month                           string                      `json:"month"`
+	ExpiryCacheInAllowedTime        string                      `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                      `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                      `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                      `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+func fillCalendar() DateModel {
+	return DateModel{
+		Events: map[string]EventModel{
+			"2024-07-05T00:00:00Z": {Events: []string{"Event 1", "Event 2", "Event 3", "Event 2", "Event 3", "Event 2", "Event 3"}},
+			"2024-07-01T00:00:00Z": {Events: []string{"Event A", "Event B"}},
+			"2024-07-02T00:00:00Z": {Events: []string{"Event A", "Event B"}},
+			"2024-07-03T00:00:00Z": {Events: []string{"Event A", "Event B"}},
+			"2024-07-04T00:00:00Z": {Events: []string{"Event A", "Event B"}},
+			"2024-07-08T00:00:00Z": {Events: []string{"Event A", "Event B"}},
+		},
+		Holidays: map[string][]HolidayModel{
+			"2024-07-04T00:00:00Z": {{Name: "Independence Day"}},
+			"2024-07-05T00:00:00Z": {{Name: "Independence Day"}},
+			"2024-07-11T00:00:00Z": {{Name: "Independence Day"}},
+		},
+		TimeTable: map[string][]TimetableModel{
+			"2024-07-05T00:00:00Z": {
+				{Period: "Period 1", Subject: "Math", SubjectTeacher: "Mr. Smith", StartTime: "09:00 AM", EndTime: "10:00 AM"},
+				{Period: "Period 2", Subject: "Math", SubjectTeacher: "Mr. Smith", StartTime: "09:00 AM", EndTime: "10:00 AM"},
+				{Period: "Period 1", Subject: "Math", SubjectTeacher: "Mr. Smith", StartTime: "09:00 AM", EndTime: "10:00 AM"},
+				{Period: "Period 1", Subject: "Math", SubjectTeacher: "Mr. Smith", StartTime: "09:00 AM", EndTime: "10:00 AM"},
+				{Period: "Period 1", Subject: "Math", SubjectTeacher: "Mr. Smith", StartTime: "09:00 AM", EndTime: "10:00 AM"},
+			},
+		},
+		Month:                           "2024-07",
+		ExpiryCacheInAllowedTime:        "1",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "1",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
 }
 
 func fillProfileModel() CoreProfilePageModel {
@@ -713,6 +776,8 @@ func main() {
 
 	e.GET("/profile", ProfileStatsHandler)
 
+	e.POST("/calendar", CalendarHandler)
+
 	// Start worker pool
 	var wg sync.WaitGroup
 	for i := 0; i < maxWorkers; i++ {
@@ -1170,6 +1235,81 @@ func ProfileStatsHandler(c echo.Context) error {
 
 	// Fill the CoreHomePageModel
 	homePageModel := fillProfileModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func CalendarHandler(c echo.Context) error {
+	var creds CalendarReq
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid credentials")
+	}
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillCalendar()
 
 	// Create the response
 	response := BaseResponse{
