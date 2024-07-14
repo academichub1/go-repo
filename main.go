@@ -145,6 +145,149 @@ type AcademicStatsModel struct {
 	ExpiryCacheInNotAllowedTimeUnit string                `json:"expiryCacheInNotAllowedTimeUnit"`
 }
 
+type CoreProfilePageModel struct {
+	GenericBasicDetailsPageModel    *GenericBasicDetailsPageModel `json:"genericBasicDetailsPageModel"`
+	AdmissionDetailsModel           *AdmissionDetailsModel        `json:"admissionDetailsModel"`
+	OptionMenuModel                 *OptionMenuModel              `json:"optionMenuModel"`
+	ExpiryCacheInAllowedTime        string                        `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                        `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                        `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                        `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+type GenericBasicDetailsPageModel struct {
+	Name            string               `json:"name"`
+	Image           string               `json:"image"`
+	ClassText       string               `json:"classText"`
+	ClassName       string               `json:"className"`
+	RollNumberText  string               `json:"rollNumberText"`
+	RollNumberValue string               `json:"rollNumberValue"`
+	ImageSize       float64              `json:"imageSize"`
+	Separator       string               `json:"separator"`
+	WidgetToUse     string               `json:"widgetToUse"`
+	Accounts        []SwitchAccountModel `json:"accounts"`
+}
+
+type SwitchAccountModel struct {
+	// Define fields for SwitchAccountModel
+}
+
+type AdmissionDetailsModel struct {
+	RegistrationNumberText  string `json:"registrationNumberText"`
+	RegistrationNumberValue string `json:"registrationNumberValue"`
+	AcademicYearText        string `json:"academicYearText"`
+	AcademicYearValue       string `json:"academicYearValue"`
+	AdmissionNumberText     string `json:"admissionNumberText"`
+	AdmissionNumberValue    string `json:"admissionNumberValue"`
+	DateOfAdmissionText     string `json:"dateOfAdmissionText"`
+	DateOfAdmissionValue    string `json:"dateOfAdmissionValue"`
+}
+
+type OptionMenuModel struct {
+	MenuItems []MenuItem `json:"menuItems"`
+}
+
+type MenuItem struct {
+	Text  string      `json:"text"`
+	Index int         `json:"index"`
+	DTO   interface{} `json:"dto"`
+}
+
+type InformationDetailsModel struct {
+	FatherNameText  string `json:"fatherNameText"`
+	FatherNameValue string `json:"fatherNameValue"`
+	MotherNameText  string `json:"motherNameText"`
+	MotherNameValue string `json:"motherNameValue"`
+	AddressText     string `json:"addressText"`
+	AddressValue    string `json:"addressValue"`
+}
+
+func fillProfileModel() CoreProfilePageModel {
+	return CoreProfilePageModel{
+		GenericBasicDetailsPageModel: &GenericBasicDetailsPageModel{
+			Name:            "Sofia Morales",
+			Image:           "assets/images/curlyMan.png",
+			ClassText:       "Class",
+			ClassName:       "9th A",
+			RollNumberText:  "Roll No.",
+			RollNumberValue: "24",
+			ImageSize:       10,
+			Separator:       ":",
+			WidgetToUse:     "D1",
+			Accounts:        []SwitchAccountModel{},
+		},
+		AdmissionDetailsModel: &AdmissionDetailsModel{
+			RegistrationNumberText:  "Registration Number",
+			RegistrationNumberValue: "2020-RWEQ-2023",
+			AcademicYearText:        "Academic Year",
+			AcademicYearValue:       "2022-2023",
+			AdmissionNumberText:     "Admission Number",
+			AdmissionNumberValue:    "000248",
+			DateOfAdmissionText:     "Date of Admission",
+			DateOfAdmissionValue:    "1 Mar, 2020",
+		},
+		OptionMenuModel: &OptionMenuModel{
+			MenuItems: []MenuItem{
+				{
+					Text:  "Information",
+					Index: 0,
+					DTO: InformationDetailsModel{
+						FatherNameText:  "FATHER",
+						FatherNameValue: "FATHER",
+						MotherNameText:  "MOTHER",
+						MotherNameValue: "MOTHER",
+						AddressText:     "18 18 Sec 9-11 Hsr ",
+						AddressValue:    "125005 , Haryana",
+					},
+				},
+				{
+					Text:  "Documents",
+					Index: 1,
+					DTO: []map[string]string{
+						{
+							"imageValue":        "assets/images/pdfLogo.png",
+							"documentTypeValue": "ADHAAR",
+							"downloadTextValue": "Download",
+						},
+						{
+							"imageValue":        "assets/images/pdfLogo.png",
+							"documentTypeValue": "10th results",
+							"downloadTextValue": "Download",
+						},
+					},
+				},
+				{
+					Text:  "Fees",
+					Index: 2,
+					DTO: []map[string]string{
+						{
+							"dateText":            "Date",
+							"dateValue":           "15 Jun 2024",
+							"amountPaidText":      "Amount Paid",
+							"amountPaidValue":     "$300",
+							"feeDescriptionText":  "Fees Description",
+							"feeDescriptionValue": "Registration",
+						},
+						{
+							"dateText":            "Date",
+							"dateValue":           "15 Jun 2024",
+							"amountPaidText":      "Amount Paid",
+							"amountPaidValue":     "$300",
+							"feeDescriptionText":  "Fees Description",
+							"feeDescriptionValue": "First month",
+						},
+					},
+				},
+			},
+		},
+		ExpiryCacheInAllowedTime:        "1",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "1",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+
+}
+
 func fillGenericAcademicStatsModel() AcademicStatsModel {
 	return AcademicStatsModel{
 		Test: "",
@@ -568,6 +711,8 @@ func main() {
 
 	e.GET("/academic-stats/assignment", AssignmentStatsHandler)
 
+	e.GET("/profile", ProfileStatsHandler)
+
 	// Start worker pool
 	var wg sync.WaitGroup
 	for i := 0; i < maxWorkers; i++ {
@@ -955,6 +1100,76 @@ func AssignmentStatsHandler(c echo.Context) error {
 
 	// Fill the CoreHomePageModel
 	homePageModel := fillAssignmentModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func ProfileStatsHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillProfileModel()
 
 	// Create the response
 	response := BaseResponse{
