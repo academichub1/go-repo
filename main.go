@@ -233,6 +233,171 @@ type DateModel struct {
 	ExpiryCacheInNotAllowedTimeUnit string                      `json:"expiryCacheInNotAllowedTimeUnit"`
 }
 
+type PaymentDetailsModel struct {
+	FeeDescriptionText  string `json:"feeDescriptionText"`
+	FeeDescriptionValue string `json:"feeDescriptionValue"`
+	AmountPaidText      string `json:"amountPaidText"`
+	AmountPaidValue     string `json:"amountPaidValue"`
+	DateText            string `json:"dateText"`
+	DateValue           string `json:"dateValue"`
+}
+
+type FeeTypeModel struct {
+	FeeType        string `json:"feeType"`
+	DueDateText    string `json:"dueDateText"`
+	DueDateValue   string `json:"dueDateValue"`
+	AmountDueText  string `json:"amountDueText"`
+	AmountDueValue string `json:"amountDueValue"`
+}
+
+type GenericFeePageModel struct {
+	TotalAmountDueDescription       string                `json:"totalAmountDueDescription"`
+	TotalAmountDueAmount            string                `json:"totalAmountDueAmount"`
+	TotalAmountDueText              string                `json:"totalAmountDueText"`
+	ButtonText                      string                `json:"buttonText"`
+	PaymentDetails                  []PaymentDetailsModel `json:"paymentDetails"`
+	FeeTypes                        []FeeTypeModel        `json:"feeTypes"`
+	ExpiryCacheInAllowedTime        string                `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+type GenericStudentHomeworkViewModel struct {
+	Heading         string `json:"heading"`
+	SubHeading      string `json:"subHeading"`
+	Date            string `json:"date"`
+	DueDateText     string `json:"dueDateText"`
+	NextServiceLink string `json:"nextServiceLink"`
+	ButtonText      string `json:"buttonText"`
+}
+
+type CoreHomeworkPageModel struct {
+	HomeWorkModel                   []GenericStudentHomeworkViewModel `json:"homeWorkModel"`
+	ExpiryCacheInAllowedTime        string                            `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                            `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                            `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                            `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+func fillCoreHomeWorkPageModel() CoreHomeworkPageModel {
+	return CoreHomeworkPageModel{
+		HomeWorkModel:                   fillGenericStudentHomeworkViewModel(),
+		ExpiryCacheInAllowedTime:        "10",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
+func fillGenericStudentHomeworkViewModel() []GenericStudentHomeworkViewModel {
+	return []GenericStudentHomeworkViewModel{
+		{
+			Heading:         "Mathematics",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "English",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "Chindi",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "Science",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "SST",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "Heading",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+		{
+			Heading:         "Heading",
+			SubHeading:      "Complete exercises 4-10 on page 75",
+			Date:            "2022-10-15",
+			DueDateText:     "Due Date",
+			NextServiceLink: "again",
+			ButtonText:      "Download",
+		},
+	}
+}
+
+func fillGenericFeePageModel() GenericFeePageModel {
+	return GenericFeePageModel{
+		TotalAmountDueDescription: "Please ensure to clear all outstanding fees by the due date to avoid any inconvenience",
+		TotalAmountDueAmount:      "$500",
+		TotalAmountDueText:        "Total Amount Due",
+		ButtonText:                "Pay Now",
+		PaymentDetails: []PaymentDetailsModel{
+			{
+				FeeDescriptionText:  "Fee Description",
+				FeeDescriptionValue: "Registration Fees",
+				AmountPaidText:      "Amount paid",
+				AmountPaidValue:     "$200",
+				DateText:            "Date",
+				DateValue:           "10 September 2021",
+			},
+			{
+				FeeDescriptionText:  "Fee Description",
+				FeeDescriptionValue: "Admission Fees",
+				AmountPaidText:      "Amount paid",
+				AmountPaidValue:     "$1000",
+				DateText:            "Date",
+				DateValue:           "10 December 2021",
+			},
+		},
+		FeeTypes: []FeeTypeModel{
+			{
+				FeeType:        "Tuition Fee",
+				DueDateText:    "Due Date",
+				DueDateValue:   "15th October 2023",
+				AmountDueText:  "Amount Due",
+				AmountDueValue: "$100",
+			},
+			{
+				FeeType:        "Swimming Fee",
+				DueDateText:    "Due Date",
+				DueDateValue:   "15th October 2023",
+				AmountDueText:  "Amount Due",
+				AmountDueValue: "$100",
+			},
+		},
+		ExpiryCacheInAllowedTime:        "10",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
 func fillCalendar() DateModel {
 	return DateModel{
 		Events: map[string]EventModel{
@@ -704,6 +869,15 @@ func fillGenericHomePageModelUser1() CoreHomePageModel {
 				WidgetToUse:     "D1",
 				ImageSize:       0.1,
 			},
+			{
+				Heading:         "Library Books",
+				SubHeading:      "Do check all issued/returned library books",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "/library",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
 		},
 		LatestUpdateData: []CoreLatestUpdatedData{
 			{
@@ -711,7 +885,7 @@ func fillGenericHomePageModelUser1() CoreHomePageModel {
 				SubHeading: "Attendance Data Attendance Data",
 			},
 			{
-				Heading:    "16",
+				Heading:    "16 Lakh",
 				SubHeading: "Attendance",
 			},
 			{
@@ -720,6 +894,76 @@ func fillGenericHomePageModelUser1() CoreHomePageModel {
 			},
 			{
 				Heading:    "16",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+		},
+		PositionLatestUpdate: 2,
+		AppBarData: AppBarData{
+			SchoolName: "SVCC Public School Test School",
+			ImagePath:  "assets/images/Image_componentV2.png",
+		},
+		ExpiryCacheInAllowedTime:        "1",
+		ExpiryCacheInAllowedTimeUnit:    "hour",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
+func fillGenericHomePageModelUser2() CoreHomePageModel {
+	return CoreHomePageModel{
+		HomepageModel: []GenericHomePageModel{
+			{
+				Heading:         "School Updates & News Exclusive For You",
+				SubHeading:      "School Updates & News Exclusive For You School Updates & News Exclusive For You",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "again",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
+			{
+				Heading:         "Outstanding Leaves Outstanding Leaves",
+				SubHeading:      "View & apply leaves here",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "/notification",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D2",
+				ImageSize:       0.1,
+			},
+			{
+				Heading:         "Homework",
+				SubHeading:      "Do check all fees related stuff here",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "/homeworkPage",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
+			{
+				Heading:         "Fees",
+				SubHeading:      "Do check all homework related stuff here",
+				Image:           "assets/images/Image_componentV2.png",
+				NextServiceLink: "/student-fees",
+				ButtonText:      "View Now",
+				WidgetToUse:     "D1",
+				ImageSize:       0.1,
+			},
+		},
+		LatestUpdateData: []CoreLatestUpdatedData{
+			{
+				Heading:    "18",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+			{
+				Heading:    "20",
+				SubHeading: "Attendance",
+			},
+			{
+				Heading:    "30",
+				SubHeading: "Attendance Data Attendance Data",
+			},
+			{
+				Heading:    "16 Lakh",
 				SubHeading: "Attendance Data Attendance Data",
 			},
 		},
@@ -786,6 +1030,10 @@ func main() {
 	e.GET("/profile", ProfileStatsHandler)
 
 	e.POST("/calendar", CalendarHandler)
+
+	e.GET("/fees", FeeHandler)
+
+	e.GET("/homework", HomeworkHandler)
 
 	// Start worker pool
 	var wg sync.WaitGroup
@@ -1030,10 +1278,12 @@ func HomePageHandler(c echo.Context) error {
 			Errors:  []string{"Token expired"},
 		})
 	}
-
-	// Fill the CoreHomePageModel
-	homePageModel := fillGenericHomePageModelUser1()
-
+	var homePageModel CoreHomePageModel
+	if claims["email"] == "test@mail.com" {
+		homePageModel = fillGenericHomePageModelUser2()
+	} else {
+		homePageModel = fillGenericHomePageModelUser1()
+	}
 	// Create the response
 	response := BaseResponse{
 		Status:  "SUCCESS",
@@ -1319,6 +1569,146 @@ func CalendarHandler(c echo.Context) error {
 
 	// Fill the CoreHomePageModel
 	homePageModel := fillCalendar()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func FeeHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillGenericFeePageModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func HomeworkHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the CoreHomePageModel
+	homePageModel := fillCoreHomeWorkPageModel()
 
 	// Create the response
 	response := BaseResponse{
