@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"io"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -1035,6 +1037,8 @@ func main() {
 
 	e.GET("/homework", HomeworkHandler)
 
+	e.GET("/image", handleImageProxy)
+
 	// Start worker pool
 	var wg sync.WaitGroup
 	for i := 0; i < maxWorkers; i++ {
@@ -1068,6 +1072,54 @@ func processRequest(r *http.Request) {
 	// Example: Normally, you would do additional processing here
 
 	fmt.Println("Processed request:", r.URL.Path)
+}
+
+func handleImageProxy(c echo.Context) error {
+	// Extract the file ID from the query parameters or path
+	fileID := c.QueryParam("id")
+	if fileID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "File ID is required")
+	}
+
+	// Construct the Google Drive image URL
+	imageURL := fmt.Sprintf("https://drive.google.com/uc?id=%s", fileID)
+
+	// Create a HTTP client with connection reuse
+	client := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns:        10,
+			MaxIdleConnsPerHost: 10,
+		},
+	}
+
+	// Create a GET request to fetch the image from Google Drive
+	req, err := http.NewRequest("GET", imageURL, nil)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to create request: %v", err))
+	}
+
+	// Fetch the image using the client
+	resp, err := client.Do(req)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to fetch image: %v", err))
+	}
+	defer resp.Body.Close()
+
+	// Set headers from Google Drive's response to the proxy response
+	c.Response().Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	c.Response().Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+	c.Response().Header().Set("Cache-Control", "public, max-age=604800") // Example caching header, adjust as needed
+
+	// Set additional CORS headers to allow any origin
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Stream the image data directly from Google Drive's response to the proxy response
+	c.Response().WriteHeader(resp.StatusCode)
+	if _, err := io.Copy(c.Response(), resp.Body); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to stream image data: %v", err))
+	}
+
+	return nil
 }
 
 // LoginHandler handles user login and issues JWT tokens
