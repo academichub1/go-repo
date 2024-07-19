@@ -1039,6 +1039,10 @@ func main() {
 
 	e.GET("/image", handleImageProxy)
 
+	e.GET("/country", getCountries)
+	e.GET("/country/:country/state", getStates)
+	e.GET("/country/:country/:state/cities", getCities)
+
 	// Start worker pool
 	var wg sync.WaitGroup
 	for i := 0; i < maxWorkers; i++ {
@@ -1770,4 +1774,228 @@ func HomeworkHandler(c echo.Context) error {
 	}
 	// Return the JSON response
 	return c.JSON(http.StatusOK, response)
+}
+
+var indiaStates = map[string]map[string][]string{
+	"India": {
+		"Andhra Pradesh": {
+			"Adoni", "Amalapuram", "Anantapur", "Bapatla", "Chilakaluripet", "Chirala", "Chittoor",
+			"Dharmavaram", "Eluru", "Gudivada", "Gudur", "Guntakal", "Guntur", "Hindupur", "Jaggaiahpet",
+			"Jammalamadugu", "Kadapa", "Kadiri", "Kakinada", "Kandukur", "Kavali", "Kurnool", "Macherla",
+			"Machilipatnam", "Madanapalle", "Mandapeta", "Markapur", "Narasaraopet", "Narsipatnam", "Nellore",
+			"Nidadavole", "Nuzvid", "Ongole", "Palacole", "Palasa Kasibugga", "Parvathipuram", "Pedana",
+			"Peddapuram", "Pithapuram", "Ponnur", "Proddatur", "Punganur", "Puttur", "Rajahmundry", "Rajam",
+			"Ramachandrapuram", "Rayachoti", "Rayadurg", "Renigunta", "Repalle", "Salur", "Samalkot", "Sattenapalle",
+			"Srikakulam", "Srikalahasti", "Srisailam Project (Right Flank Colony) Township", "Sullurpeta", "Tadepalligudem",
+			"Tadpatri", "Tanuku", "Tenali", "Tirupati", "Tiruvuru", "Tuni", "Uravakonda", "Venkatagiri", "Vijayawada",
+			"Vinukonda", "Visakhapatnam", "Vizianagaram", "Yemmiganur", "Yerraguntla",
+		},
+		"Arunachal Pradesh": {
+			"Naharlagun", "Pasighat",
+		},
+		"Assam": {
+			"Barpeta", "Bongaigaon City", "Dhubri", "Dibrugarh", "Diphu", "Goalpara", "Guwahati", "Jorhat", "Karimganj",
+			"Lanka", "Lumding", "Mangaldoi", "Mankachar", "Margherita", "Mariani", "Marigaon", "Nagaon", "Nalbari",
+			"North Lakhimpur", "Rangia", "Sibsagar", "Silapathar", "Silchar", "Tezpur", "Tinsukia",
+		},
+		"Bihar": {
+			"Araria", "Arrah", "Arwal", "Asarganj", "Aurangabad", "Bagaha", "Barh", "Begusarai", "Bettiah", "Bhabua",
+			"Bhagalpur", "Buxar", "Chhapra", "Darbhanga", "Dehri-on-Sone", "Dumraon", "Forbesganj", "Gaya", "Gopalganj",
+			"Hajipur", "Jamalpur", "Jamui", "Jehanabad", "Katihar", "Kishanganj", "Lakhisarai", "Lalganj", "Madhepura",
+			"Madhubani", "Maharajganj", "Mahnar Bazar", "Makhdumpur", "Maner", "Manihari", "Marhaura", "Masaurhi", "Mirganj",
+			"Mokameh", "Motihari", "Motipur", "Munger", "Murliganj", "Muzaffarpur", "Narkatiaganj", "Naugachhia", "Nawada",
+			"Nokha", "Patna", "Piro", "Purnia", "Rafiganj", "Rajgir", "Ramnagar", "Raxaul Bazar", "Revelganj", "Rosera",
+			"Saharsa", "Samastipur", "Sasaram", "Sheikhpura", "Sheohar", "Sherghati", "Silao", "Sitamarhi", "Siwan",
+			"Sonepur", "Sugauli", "Sultanganj", "Supaul", "Warisaliganj",
+		},
+		"Chhattisgarh": {
+			"Ambikapur", "Bhatapara", "Bhilai Nagar", "Bilaspur", "Chirmiri", "Dalli-Rajhara", "Dhamtari", "Durg", "Jagdalpur",
+			"Korba", "Mahasamund", "Manendragarh", "Mungeli", "Naila Janjgir", "Raigarh", "Raipur", "Rajnandgaon", "Sakti", "Tilda Newra",
+		},
+		"Goa": {
+			"Mapusa", "Margao", "Marmagao", "Panaji",
+		},
+		"Gujarat": {
+			"Adalaj", "Ahmedabad", "Amreli", "Anand", "Anjar", "Ankleshwar", "Bharuch", "Bhavnagar", "Bhuj", "Chhapra", "Deesa",
+			"Dhoraji", "Godhra", "Jamnagar", "Kadi", "Kapadvanj", "Keshod", "Khambhat", "Lathi", "Limbdi", "Lunawada", "Mahesana",
+			"Mahuva", "Manavadar", "Mandvi", "Mangrol", "Mansa", "Mahudha", "Modasa", "Morvi", "Nadiad", "Navsari", "Padra", "Palanpur",
+			"Palitana", "Pardi", "Patan", "Petlad", "Porbandar", "Radhanpur", "Rajkot", "Rajpipla", "Rajula", "Ranavav", "Rapar", "Salaya",
+			"Sanand", "Savarkundla", "Sidhpur", "Sihor", "Songadh", "Surat", "Talaja", "Thangadh", "Tharad", "Umbergaon", "Umreth", "Una",
+			"Unjha", "Upleta", "Vadnagar", "Vadodara", "Valsad", "Vapi", "Vapi", "Veraval", "Vijapur", "Viramgam", "Visnagar", "Vyara",
+			"Wadhwan", "Wankaner",
+		},
+		"Haryana": {
+			"Bahadurgarh", "Bhiwani", "Charkhi Dadri", "Faridabad", "Fatehabad", "Gohana", "Gurgaon", "Hansi", "Hisar", "Jind", "Kaithal",
+			"Karnal", "Ladwa", "Mahendragarh", "Mandi Dabwali", "Narnaul", "Narwana", "Palwal", "Panchkula", "Panipat", "Pehowa", "Pinjore",
+			"Rania", "Ratia", "Rewari", "Rohtak", "Safidon", "Samalkha", "Sarsod", "Shahbad", "Sirsa", "Sohna", "Sonipat", "Taraori", "Thanesar",
+			"Tohana", "Yamunanagar",
+		},
+		"Himachal Pradesh": {
+			"Mandi", "Nahan", "Palampur", "Shimla", "Solan", "Sundarnagar",
+		},
+		"Jharkhand": {
+			"Adityapur", "Bokaro Steel City", "Chaibasa", "Chatra", "Chirkunda", "Medininagar (Daltonganj)", "Deoghar", "Dhanbad", "Dumka",
+			"Giridih", "Gumia", "Hazaribag", "Jamshedpur", "Jhumri Tilaiya", "Lohardaga", "Madhupur", "Mihijam", "Musabani", "Pakaur", "Patratu",
+			"Phusro", "Ramgarh", "Ranchi", "Sahibganj", "Saunda", "Simdega", "Tenu dam-cum-Kathhara",
+		},
+		"Karnataka": {
+			"Adyar", "Afzalpur", "Arsikere", "Athni", "Bengaluru", "Belagavi", "Ballari", "Chikkamagaluru", "Davanagere", "Gokak", "Hubli-Dharwad",
+			"Karwar", "Kolar", "Lakshmeshwar", "Lingsugur", "Maddur", "Madhugiri", "Madikeri", "Magadi", "Mahalingapura", "Malavalli", "Malur",
+			"Mandya", "Mangaluru", "Mudalagi", "Mudabidri", "Muddebihal", "Mudhol", "Mulbagal", "Mundargi", "Nanjangud", "Nargund", "Navalgund",
+			"Nelamangala", "Pavagada", "Piriyapatna", "Puttur", "Raayachuru", "Rabkavi Banhatti", "Ramanagaram", "Ramdurg", "Ranibennur", "Robertson Pet",
+			"Ron", "Sadalagi", "Sagara", "Sakaleshapura", "Sindagi", "Sanduru", "Sankeshwara", "Saundatti-Yellamma", "Savanur", "Sedam", "Shahabad",
+			"Shahpur", "Shiggaon", "Shikaripur", "Shivamogga", "Surapura", "Shrirangapattana", "Sidlaghatta", "Sindhagi", "Sindhnur", "Sira", "Sirsi",
+			"Siruguppa", "Srinivaspur", "Tarikere", "Tekkalakote", "Terdal", "Talikota", "Tiptur", "Tumkur", "Udupi", "Vijayapura", "Wadi", "Yadgir",
+			"Mysuru",
+		},
+		"Kerala": {
+			"Adoor", "Alappuzha", "Attingal", "Chalakudy", "Changanassery", "Cherthala", "Chittur-Thathamangalam", "Guruvayoor", "Kanhangad",
+			"Kannur", "Kasaragod", "Kayamkulam", "Kochi", "Kollam", "Kottayam", "Kozhikode", "Kunnamkulam", "Malappuram", "Mattannur", "Mavelikkara",
+			"Mavoor", "Muvattupuzha", "Nedumangad", "Neyyattinkara", "Nilambur", "Ottappalam", "Palai", "Palakkad", "Panamattom", "Panniyannur",
+			"Pappinisseri", "Paravoor", "Pathanamthitta", "Peringathur", "Perinthalmanna", "Perumbavoor", "Ponnani", "Punalur", "Puthuppally", "Shoranur",
+			"Taliparamba", "Thiruvalla", "Thiruvananthapuram", "Thodupuzha", "Thrissur", "Tirur", "Vaikom", "Varkala",
+		},
+		"Madhya Pradesh": {
+			"Alirajpur", "Ashok Nagar", "Balaghat", "Betul", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", "Damoh", "Datia", "Dewas",
+			"Dhar", "Fatehabad", "Guna", "Gwalior", "Harda", "Hoshangabad", "Indore", "Itarsi", "Jabalpur", "Jhabua", "Khandwa", "Khargone",
+			"Maharajpur", "Maihar", "Malaj Khand", "Manasa", "Manawar", "Mandideep", "Mandla", "Mandsaur", "Mauganj", "Mhow Cantonment",
+			"Mhowgaon", "Morena", "Multai", "Murwara (Katni)", "Nagda", "Nainpur", "Narsinghgarh", "Narsinghgarh", "Neemuch", "Nepanagar",
+			"Niwari", "Nowgong", "Nowrozabad (Khodargama)", "Pachore", "Pali", "Panagar", "Pandhurna", "Panna", "Pasan", "Pipariya", "Pithampur",
+			"Porsa", "Prithvipur", "Raghogarh-Vijaypur", "Rahatgarh", "Raisen", "Rajgarh", "Ratlam", "Rau", "Rehli", "Rewa", "Sabalgarh", "Sagar",
+			"Sanawad", "Sarangpur", "Sarni", "Satna", "Sausar", "Sehore", "Sendhwa", "Seoni", "Seoni-Malwa", "Shahdol", "Shajapur", "Shamgarh",
+			"Sheopur", "Shivpuri", "Shujalpur", "Sidhi", "Sihora", "Singrauli", "Sironj", "Sohagpur", "Tarana", "Tikamgarh", "Ujjain", "Umaria",
+			"Vidisha", "Vijaypur", "Wara Seoni",
+		},
+		"Maharashtra": {
+			"Ahmednagar", "Akola", "Amravati", "Aurangabad", "Baramati", "Chalisgaon", "Chinchani", "Devgarh", "Dhule", "Dombivli", "Durgapur", "Ichalkaranji", "Jalna",
+			"Kalyan", "Latur", "Lonar", "Mahad", "Malegaon", "Malkapur", "Manchar", "Mangalvedhe", "Mangrulpir", "Manjlegaon", "Manmad", "Manwath", "Mehkar", "Mhaswad",
+			"Mira-Bhayandar", "Morshi", "Mukhed", "Mul", "Mumbai", "Murtijapur", "Nagpur", "Nalasopara", "Nanded", "Nandgaon", "Nandura", "Nandurbar", "Narkhed", "Nashik",
+			"Navi Mumbai", "Nawapur", "Nilanga", "Osmanabad", "Ozar", "Pachora", "Paithan", "Palghar", "Pandharkaoda", "Pandharpur", "Panvel", "Parbhani", "Parli", "Parola",
+			"Partur", "Pathardi", "Pathri", "Patur", "Pauni", "Pen", "Phaltan", "Pulgaon", "Pune", "Purna", "Pusad", "Rahuri", "Raigad", "Ratnagiri", "Raver", "Risod", "Sailu",
+			"Sangamner", "Sangli", "Sangole", "Sasvad", "Satana", "Satara", "Savner", "Sawantwadi", "Shahade", "Shegaon", "Shendurjana", "Shirdi", "Shirpur-Warwade", "Shirur",
+			"Shrigonda", "Shrirampur", "Sillod", "Sinnar", "Solapur", "Soyagaon", "Talegaon Dabhade", "Talode", "Tasgaon", "Thane", "Tirora", "Tuljapur", "Tumsar", "Uchgaon",
+			"Udgir", "Umarga", "Umarkhed", "Umred", "Uran", "Uran Islampur", "Vadgaon Kasba", "Vaijapur", "Vasai-Virar", "Vita", "Wadgaon Road", "Wai", "Wani", "Wardha", "Warora",
+			"Warud", "Washim", "Yavatmal", "Yawal", "Yevla",
+		},
+		"Manipur": {
+			"Imphal",
+		},
+		"Meghalaya": {
+			"Shillong",
+		},
+		"Mizoram": {
+			"Aizawl",
+		},
+		"Nagaland": {
+			"Dimapur", "Kohima",
+		},
+		"Odisha": {
+			"Balangir", "Baleshwar", "Barbil", "Bargarh", "Baripada Town", "Bhadrak", "Bhawanipatna", "Bhubaneswar", "Brahmapur", "Byasanagar",
+			"Cuttack", "Debagarh", "Dhenkanal", "Jatani", "Jharsuguda", "Kendrapara", "Kendujhar", "Malkangiri", "Nabarangapur", "Paradip", "Parlakhemundi",
+			"Pattamundai", "Phulabani", "Puri", "Rairangpur", "Rajagangapur", "Raurkela", "Rayagada", "Sambalpur", "Soro", "Sunabeda", "Sundargarh",
+			"Talcher", "Titlagarh", "Umarkote",
+		},
+		"Punjab": {
+			"Amritsar", "Barnala", "Batala", "Bathinda", "Dhuri", "Faridkot", "Fazilka", "Firozpur", "Firozpur Cantt.", "Gobindgarh", "Gurdaspur",
+			"Hoshiarpur", "Jagraon", "Jalandhar", "Kapurthala", "Khanna", "Kharar", "Kot Kapura", "Longowal", "Ludhiana", "Malerkotla", "Malout",
+			"Mansa", "Moga", "Mohali", "Morinda, India", "Muktsar", "Nabha", "Nakodar", "Nangal", "Nawanshahr", "Pathankot", "Patiala", "Pattran",
+			"Patti", "Phagwara", "Phillaur", "Qadian", "Raikot", "Rajpura", "Rampura Phul", "Rupnagar", "Samana", "Sangrur", "Sirhind Fatehgarh Sahib",
+			"Sujanpur", "Sunam", "Talwara", "Tarn Taran", "Urmar Tanda", "Zira", "Zirakpur",
+		},
+		"Rajasthan": {
+			"Ajmer", "Alwar", "Bikaner", "Bharatpur", "Bhilwara", "Bhiwadi", "Bhilwara", "Bikaner", "Chittorgarh", "Churu", "Daosa", "Firozpur Jhirka", "Gangapur",
+			"Hanumangarh", "Hindaun", "Jaipur", "Jaisalmer", "Jalore", "Jhalawar", "Jhunjhunu", "Kankroli", "Kishangarh", "Kota", "Kuchaman City", "Ladnu", "Lakheri",
+			"Lalsot", "Losal", "Makrana", "Malpura", "Mandalgarh", "Mandawa", "Mangrol", "Merta City", "Mount Abu", "Nadbai", "Nagar", "Nagaur", "Nargund", "Nasirabad",
+			"Nathdwara", "Neem-Ka-Thana", "Nimbahera", "Nohar", "Nokha", "Pali", "Phalodi", "Phulera", "Pilani", "Pilibanga", "Pindwara", "Pipar City", "Prantij",
+			"Pratapgarh", "Raisinghnagar", "Rajakhera", "Rajaldesar", "Rajgarh Alwar", "Rajgarh Churu", "Rajsamand", "Ramganj Mandi", "Ramngarh", "Ratangarh", "Rawatbhata",
+			"Rawatsar", "Reengus", "Sadri", "Sadulshahar", "Sadulpur", "Sagwara", "Sambhar", "Sanchore", "Sangaria", "Sardarshahar", "Sawai Madhopur", "Shahpura", "Shahpura",
+			"Sheoganj", "Sikar", "Sirohi", "Sojat", "Sri Madhopur", "Sujangarh", "Sumerpur", "Suratgarh", "Taranagar", "Todabhim", "Todaraisingh", "Tonk", "Udaipur", "Udaipurwati",
+			"Vijainagar, Ajmer", "Gangapur City",
+		},
+		"Sikkim": {
+			"Gangtok",
+		},
+		"Tamil Nadu": {
+			"Arcot", "Aruppukkottai", "Chennai", "Coimbatore", "Erode", "Kanchipuram", "Karur", "Lalgudi", "Madurai", "Manasa", "Masaurhi", "Nagercoil", "Namagiripettai", "Namakkal",
+			"Nandivaram-Guduvancheri", "Nanjikottai", "Natham", "Nellikuppam", "Neyveli", "O' Valley", "Oddanchatram", "P.N.Patti", "Pacode", "Padmanabhapuram", "Palani", "Palladam",
+			"Pallapatti", "Pallikonda", "Panagudi", "Panruti", "Paramakudi", "Parangipettai", "Pattukkottai", "Perambalur", "Peravurani", "Periyakulam", "Periyasemur", "Pernampattu",
+			"Pollachi", "Polur", "Ponneri", "Pudukkottai", "Pudupattinam", "Puliyankudi", "Punjaipugalur", "Ranipet", "Rajapalayam", "Ramanathapuram", "Rameshwaram", "Rasipuram",
+			"Salem", "Sankarankoil", "Sankari", "Sathyamangalam", "Sattur", "Shenkottai", "Sholavandan", "Sholingur", "Sirkali", "Sivaganga", "Sivagiri", "Sivakasi", "Srivilliputhur",
+			"Surandai", "Suriyampalayam", "Tenkasi", "Thammampatti", "Thanjavur", "Tharamangalam", "Tharangambadi", "Theni Allinagaram", "Thirumangalam", "Thirupuvanam", "Thiruthuraipoondi",
+			"Thiruvallur", "Thiruvarur", "Thuraiyur", "Tindivanam", "Tiruchendur", "Tiruchengode", "Tiruchirappalli", "Tirukalukundram", "Tirukkoyilur", "Tirunelveli", "Tirupathur", "Tirupathur",
+			"Tiruppur", "Tiruttani", "Tiruvannamalai", "Tiruvethipuram", "Tittakudi", "Udhagamandalam", "Udumalaipettai", "Unnamalaikadai", "Usilampatti", "Uthamapalayam", "Uthiramerur",
+			"Vadakkuvalliyur", "Vadalur", "Vadipatti", "Valparai", "Vandavasi", "Vaniyambadi", "Vedaranyam", "Vellakoil", "Vellore", "Vikramasingapuram", "Viluppuram", "Virudhachalam",
+			"Virudhunagar", "Viswanatham",
+		},
+		"Telangana": {
+			"Adilabad", "Bellampalle", "Bhadrachalam", "Bhainsa", "Bhongir", "Bodhan", "Farooqnagar", "Gadwal", "Hyderabad", "Jagtial", "Jangaon", "Kagaznagar", "Kamareddy",
+			"Karimnagar", "Khammam", "Koratla", "Kothagudem", "Kyathampalle", "Mahbubnagar", "Mancherial", "Mandamarri", "Manuguru", "Medak", "Miryalaguda", "Nagarkurnool",
+			"Narayanpet", "Nirmal", "Nizamabad", "Palwancha", "Ramagundam", "Sadasivpet", "Sangareddy", "Siddipet", "Sircilla", "Suryapet", "Tandur", "Vikarabad", "Wanaparthy",
+			"Warangal", "Yellandu",
+		},
+		"Tripura": {
+			"Agartala",
+		},
+		"Uttar Pradesh": {
+			"Achhnera", "Agra", "Aligarh", "Allahabad", "Amroha", "Azamgarh", "Bahraich", "Ballia", "Balrampur", "Banda", "Barabanki", "Bareilly", "Basti", "Bijnor", "Bithur",
+			"Budaun", "Bulandshahr", "Chandausi", "Chitrakoot Dham (Karwi)", "Deoria", "Etawah", "Faizabad", "Farrukhabad", "Fatehpur", "Fatehpur Sikri", "Ghaziabad", "Ghazipur",
+			"Gonda", "Gorakhpur", "Hamirpur", "Hardoi", "Hasanpur", "Hathras", "Jalaun", "Jaunpur", "Jhansi", "Kannauj", "Kanpur", "Lakhimpur", "Lalitpur", "Loni", "Lucknow",
+			"Mathura", "Meerut", "Modinagar", "Moradabad", "Noida", "Orai", "Pilibhit", "Raebareli", "Rampur", "Rae Bareli", "Rampur", "Saharanpur", "Sambhal", "Shahjahanpur",
+			"Shamli", "Shikohabad", "Sitapur", "Sultanpur", "Tanda", "Ujhani", "Unnao", "Varanasi",
+		},
+		"Uttarakhand": {
+			"Bageshwar", "Dehradun", "Haldwani-cum-Kathgodam", "Hardwar", "Kashipur", "Manglaur", "Mussoorie", "Nagla", "Nainital", "Pauri", "Pithoragarh", "Ramnagar", "Rishikesh", "Roorkee", "Rudrapur", "Sitarganj", "Srinagar",
+		},
+		"West Bengal": {
+			"Adra", "Alipurduar", "Arambagh", "Asansol", "Baharampur", "Bally", "Balurghat", "Bankura", "Barakar", "Barasat", "Bardhaman", "Bidhan Nagar", "Chakdaha", "Chandannagar", "Contai", "Cooch Behar", "Darjiling", "Durgapur", "Haldia", "Howrah", "Islampur", "Jalpaiguri", "Jhargram", "Kalimpong", "Kalyani", "Kamarhati", "Kanchrapara", "Kharagpur", "Kolkata", "Krishnanagar", "Mainaguri", "Malda", "Medinipur", "Memari", "Monoharpur", "Murshidabad", "Nabadwip", "Naihati", "Panihati", "Purulia", "Raiganj", "Rampurhat", "Ranaghat", "Sainthia", "Santipur", "Siliguri", "Sonamukhi", "Srirampore", "Titagarh",
+		},
+		"Andaman and Nicobar Islands": {
+			"Port Blair",
+		},
+		"Chandigarh": {
+			"Chandigarh",
+		},
+		"Dadra and Nagar Haveli": {
+			"Silvassa",
+		},
+		"Daman and Diu": {
+			"Daman", "Diu",
+		},
+		"Lakshadweep": {
+			"Kavaratti",
+		},
+		"Delhi": {
+			"Delhi",
+		},
+		"Puducherry": {
+			"Karaikal", "Mahe", "Pondicherry", "Yanam",
+		},
+	},
+}
+
+func getCountries(c echo.Context) error {
+	states := make([]string, 0, len(indiaStates))
+	for state := range indiaStates {
+		states = append(states, state)
+	}
+	return c.JSON(http.StatusOK, states)
+}
+
+func getStates(c echo.Context) error {
+	country := c.Param("country")
+	var states []string
+	for state := range indiaStates[country] {
+		states = append(states, state)
+	}
+	return c.JSON(http.StatusOK, states)
+}
+
+func getCities(c echo.Context) error {
+	country := c.Param("country")
+	state := c.Param("state")
+	cities, ok := indiaStates[country][state]
+	if !ok {
+		return c.JSON(http.StatusNotFound, echo.Map{"error": "State not found"})
+	}
+	return c.JSON(http.StatusOK, cities)
 }
