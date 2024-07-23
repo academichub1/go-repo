@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -63,8 +64,9 @@ func main() {
 	})
 
 	e.GET("/v2", func(c echo.Context) error {
-		key := "example_key"
 
+		// Generate random text or number
+		key := fmt.Sprintf("example_value_%d", rand.Intn(1000))
 		// SET operation
 		err := redisClient.Set(ctx, key, "example_value", 0).Err()
 		if err != nil {
