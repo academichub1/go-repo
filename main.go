@@ -1232,11 +1232,31 @@ func LoginHandler(c echo.Context) error {
 	refreshTokens[refreshTokenString] = creds.Username
 
 	// Return tokens to the client
-	response := map[string]string{
+	response := map[string]interface{}{
 		"access_token":    tokenString,
 		"refresh_token":   refreshTokenString,
 		"expires_at":      expirationTime.Format(time.RFC3339),
 		"refresh_expires": refreshExpirationTime.Format(time.RFC3339),
+		"access-list": map[string]interface{}{
+			"overview": map[string]string{
+				"class": "1",
+			},
+			"comments": map[string]string{
+				"class": "1",
+			},
+			"students": map[string]string{
+				"class": "1",
+			},
+			"student_birthdays": map[string]string{
+				"class": "1",
+			},
+			"teacher_leaves": map[string]string{
+				"class": "1",
+			},
+			"service_requests": map[string]string{
+				"class": "1",
+			},
+		},
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -1311,11 +1331,31 @@ func RefreshTokenHandler(c echo.Context) error {
 	refreshTokens[newRefreshTokenString] = claims["email"].(string)
 
 	// Return the new tokens to the client
-	response := map[string]string{
+	response := map[string]interface{}{
 		"access_token":    newTokenString,
 		"refresh_token":   newRefreshTokenString,
 		"expires_at":      expirationTime.Format(time.RFC3339),
 		"refresh_expires": refreshExpirationTime.Format(time.RFC3339),
+		"access-list": map[string]interface{}{
+			"overview": map[string]string{
+				"class": "1",
+			},
+			"comments": map[string]string{
+				"class": "1",
+			},
+			"students": map[string]string{
+				"class": "1",
+			},
+			"student_birthdays": map[string]string{
+				"class": "1",
+			},
+			"teacher_leaves": map[string]string{
+				"class": "1",
+			},
+			"service_requests": map[string]string{
+				"class": "1",
+			},
+		},
 	}
 
 	return c.JSON(http.StatusOK, response)
