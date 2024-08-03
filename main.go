@@ -1237,6 +1237,7 @@ func LoginHandler(c echo.Context) error {
 		"refresh_token":   refreshTokenString,
 		"expires_at":      expirationTime.Format(time.RFC3339),
 		"refresh_expires": refreshExpirationTime.Format(time.RFC3339),
+		"user_type":       "new_user",
 		"access-list": map[string]interface{}{
 			"overview": map[string]string{
 				"class": "1",
@@ -1336,6 +1337,7 @@ func RefreshTokenHandler(c echo.Context) error {
 		"refresh_token":   newRefreshTokenString,
 		"expires_at":      expirationTime.Format(time.RFC3339),
 		"refresh_expires": refreshExpirationTime.Format(time.RFC3339),
+		"user_type":       "new_user",
 		"access-list": map[string]interface{}{
 			"overview": map[string]string{
 				"class": "1",
