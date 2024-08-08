@@ -161,6 +161,14 @@ type CoreProfilePageModel struct {
 	ExpiryCacheInNotAllowedTimeUnit string                        `json:"expiryCacheInNotAllowedTimeUnit"`
 }
 
+type CoreOnBoarding struct {
+	Data                            map[string]interface{} `json:"data"`
+	ExpiryCacheInAllowedTime        string                 `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                 `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                 `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                 `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
 type GenericBasicDetailsPageModel struct {
 	Name            string               `json:"name"`
 	Image           string               `json:"image"`
@@ -285,6 +293,40 @@ type CoreHomeworkPageModel struct {
 func fillCoreHomeWorkPageModel() CoreHomeworkPageModel {
 	return CoreHomeworkPageModel{
 		HomeWorkModel:                   fillGenericStudentHomeworkViewModel(),
+		ExpiryCacheInAllowedTime:        "10",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
+func fillOnBoardModel() CoreOnBoarding {
+	return CoreOnBoarding{
+		Data: map[string]interface{}{
+			"comments": []map[string]interface{}{
+				{
+					"title":       "Step-1 : Basic Information",
+					"description": "Provide Some Basic Details About School",
+					"imageSrc":    "assets/icons/check_circled_filled.svg",
+					"routes":      "/onboard-user-step-1",
+					"isClickable": true,
+				},
+				{
+					"title":       "Step-2 : Basic Information",
+					"description": "Provide Some Basic Details About School",
+					"imageSrc":    "assets/icons/close_circled_filled.svg",
+					"routes":      "/studentList",
+					"isClickable": false,
+				},
+				{
+					"title":       "Step-3 : Basic Information",
+					"description": "Provide Some Basic Details About School",
+					"imageSrc":    "assets/icons/close_circled_filled.svg",
+					"routes":      "/dashboard",
+					"isClickable": false,
+				},
+			},
+		},
 		ExpiryCacheInAllowedTime:        "10",
 		ExpiryCacheInAllowedTimeUnit:    "minutes",
 		ExpiryCacheInNotAllowedTime:     "10",
@@ -1083,6 +1125,8 @@ func main() {
 
 	e.GET("/image", handleImageProxy)
 
+	e.GET("/onboard", OnBoardHandler)
+
 	e.GET("/country", getCountries)
 	e.GET("/country/:country/state", getStates)
 	e.GET("/country/:country/:state/cities", getCities)
@@ -1120,6 +1164,74 @@ func processRequest(r *http.Request) {
 	// Example: Normally, you would do additional processing here
 
 	fmt.Println("Processed request:", r.URL.Path)
+}
+
+func OnBoardHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	data := fillOnBoardModel()
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    data,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
 }
 
 func handleImageProxy(c echo.Context) error {
