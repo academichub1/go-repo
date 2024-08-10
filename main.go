@@ -324,7 +324,7 @@ func fillOnBoardModel() CoreOnBoarding {
 					"title":       "Step-2 : Basic Information",
 					"description": "Provide Some Basic Details About School",
 					"imageSrc":    "assets/icons/close_circled_filled.svg",
-					"routes":      "/studentList",
+					"routes":      "/onboard-user-step2",
 					"isClickable": true,
 				},
 				{
