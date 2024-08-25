@@ -303,6 +303,103 @@ type CoreHomeworkPageModel struct {
 	ExpiryCacheInNotAllowedTimeUnit string                            `json:"expiryCacheInNotAllowedTimeUnit"`
 }
 
+type CoreLeaveRequestPageModel struct {
+	StudentData                     []map[string]interface{} `json:"studentData"`
+	Columns                         []string                 `json:"columns"`
+	CurrentPage                     int64                    `json:"currentPage"`
+	PageSize                        int64                    `json:"pageSize"`
+	TotalPage                       int64                    `json:"totalPage"`
+	ExpiryCacheInAllowedTime        string                   `json:"expiryCacheInAllowedTime"`
+	ExpiryCacheInAllowedTimeUnit    string                   `json:"expiryCacheInAllowedTimeUnit"`
+	ExpiryCacheInNotAllowedTime     string                   `json:"expiryCacheInNotAllowedTime"`
+	ExpiryCacheInNotAllowedTimeUnit string                   `json:"expiryCacheInNotAllowedTimeUnit"`
+}
+
+type LeaveRequestStudentData struct {
+	Approve     string `json:"Approve"`
+	Reject      string `json:"Reject"`
+	Status      string `json:"Status"`
+	Student     string `json:"Student"`
+	Section     string `json:"Section"`
+	RequestDate string `json:"RequestDate"`
+	FromDate    string `json:"FromDate"`
+	ToDate      string `json:"ToDate"`
+	Reason      string `json:"Reason"`
+	Remarks     string `json:"Remarks"`
+}
+
+func fillLeaveRequestPageModel() CoreLeaveRequestPageModel {
+	return CoreLeaveRequestPageModel{
+		StudentData:                     fillLeaveRequestStudentData(),
+		Columns:                         fillLeaveColumns(),
+		CurrentPage:                     1,
+		PageSize:                        10,
+		TotalPage:                       2,
+		ExpiryCacheInAllowedTime:        "10",
+		ExpiryCacheInAllowedTimeUnit:    "minutes",
+		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTimeUnit: "minutes",
+	}
+}
+
+func fillLeaveColumns() []string {
+	return []string{
+		"s.no",
+		"Approve",
+		"Reject",
+		"Student",
+		"Section",
+		"Request Date",
+		"From Date",
+		"To Date",
+		"Reason",
+		"Status",
+		"Remarks",
+	}
+}
+
+func fillLeaveRequestStudentData() []map[string]interface{} {
+	return []map[string]interface{}{
+		{
+			"Approve":     "",
+			"Reject":      "Reject",
+			"Status":      "Approved",
+			"Student":     "Banda 1",
+			"Section":     "10th A",
+			"RequestDate": "2024-04-03",
+			"FromDate":    "2024-04-04",
+			"ToDate":      "2024-04-07",
+			"Reason":      "Hai kuch 1",
+			"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+		},
+		{
+			"Approve":     "Approve",
+			"Reject":      "Reject",
+			"Status":      "pending",
+			"Student":     "Banda 2",
+			"Section":     "10th B",
+			"RequestDate": "2024-04-04",
+			"FromDate":    "2024-04-05",
+			"ToDate":      "2024-04-08",
+			"Reason":      "Hai kuch 2",
+			"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+		},
+		{
+			"Approve":     "Approve",
+			"Reject":      "Reject",
+			"Status":      "pending",
+			"Student":     "Banda 3",
+			"Section":     "10th C",
+			"RequestDate": "2024-04-05",
+			"FromDate":    "2024-04-06",
+			"ToDate":      "2024-04-09",
+			"Reason":      "Hai kuch 3",
+			"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+		},
+	}
+
+}
+
 func fillCoreHomeWorkPageModel() CoreHomeworkPageModel {
 	return CoreHomeworkPageModel{
 		HomeWorkModel:                   fillGenericStudentHomeworkViewModel(),
@@ -1144,6 +1241,8 @@ func main() {
 	e.GET("/homework", HomeworkHandler)
 
 	e.GET("/image", handleImageProxy)
+
+	e.GET("/leaveRequest", LeaveHandler)
 
 	e.GET("/onboard", OnBoardHandler)
 
@@ -2139,6 +2238,76 @@ func HomeworkHandler(c echo.Context) error {
 		Status:  "SUCCESS",
 		Message: "Success",
 		Data:    homePageModel,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func LeaveHandler(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	// Fill the LeaveRequestPageModel
+	leaveRequestModel := fillLeaveRequestPageModel()
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    leaveRequestModel,
 	}
 	// Return the JSON response
 	return c.JSON(http.StatusOK, response)
