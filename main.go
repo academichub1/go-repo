@@ -29,6 +29,10 @@ type OnBoardingRequestDto struct {
 	SchoolLogo    []byte `json:"schoolLogo"`
 }
 
+type OnBoardingSubjectDataRequestDto struct {
+	Data []map[string]interface{} `json:"data"`
+}
+
 type CalendarReq struct {
 	SelectedDate string `json:"selected_date"`
 }
@@ -1147,7 +1151,11 @@ func main() {
 	e.GET("/country/:country/state", getStates)
 	e.GET("/country/:country/:state/cities", getCities)
 
-	e.POST("/onboard-step-1", HomePageHandler)
+	e.POST("/onboard-step-1", OnBoardHandlerStep1)
+
+	e.POST("/onBoard-subject-admin", OnBoardHandlerSubjectData)
+
+	e.POST("/onBoard-bus-routes-admin", OnBoardHandlerSubjectData)
 
 	// Start worker pool
 	var wg sync.WaitGroup
@@ -1186,6 +1194,78 @@ func processRequest(r *http.Request) {
 
 func OnBoardHandlerStep1(c echo.Context) error {
 	var creds OnBoardingRequestDto
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request")
+	}
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	data := fillOnBoardModel()
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    data,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func OnBoardHandlerSubjectData(c echo.Context) error {
+	var creds OnBoardingSubjectDataRequestDto
 	if err := c.Bind(&creds); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid request")
 	}
