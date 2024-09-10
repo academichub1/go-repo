@@ -1252,6 +1252,8 @@ func main() {
 
 	e.POST("/onboard-step-1", OnBoardHandlerStep1)
 
+	e.POST("/extract-dropdown", DropDownHandler)
+
 	e.POST("/onBoard-subject-admin", OnBoardHandlerSubjectData)
 
 	e.POST("/onBoard-bus-routes-admin", OnBoardHandlerSubjectData)
@@ -1353,6 +1355,106 @@ func OnBoardHandlerStep1(c echo.Context) error {
 	}
 
 	data := fillOnBoardModel()
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    data,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+}
+
+func DropDownHandler(c echo.Context) error {
+	var creds map[string]interface{}
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request")
+	}
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	data := map[string]interface{}{
+		"data": map[string]interface{}{
+
+			"sessionDropDown": []string{"2023-24", "2024-25"},
+			"classes":         []string{"1", "2", "12"},
+			"boards":          []string{"CBSE", "HSE", "TSE", "USE"},
+			"gender":          []string{"MALE", "FEMALE"},
+			"religion":        []string{"HINDU", "MUSLIM"},
+			"caste":           []string{"GENERAL", "SC", "ST", "OBC"},
+			"status":          []string{"Active", "InActive"},
+			"school_type":     []string{"Higher Secondary Education", "Secondary School Certificate"},
+			"subjects": map[string][]string{
+				"1":  {"Hindi", "English"},
+				"2":  {"Math", "Science"},
+				"12": {"Physics", "Chemistry", "Biology", "Mathematics"},
+			},
+			"sections": map[string][]string{
+				"1":  {"A", "B"},
+				"2":  {"A", "B"},
+				"12": {"A", "B", "C", "D"},
+			},
+			"enquiry_status": []string{"PENDING", "DONE", "LEFT", "IN-LOOP/CALL"},
+		},
+		"expiryCacheInAllowedTime_dropDown":        "10",
+		"expiryCacheInAllowedTimeUnit_dropDown":    "minutes",
+		"expiryCacheInNotAllowedTime_dropDown":     "10",
+		"expiryCacheInNotAllowedTimeUnit_dropDown": "minutes",
+	}
+
 	// Create the response
 	response := BaseResponse{
 		Status:  "SUCCESS",
