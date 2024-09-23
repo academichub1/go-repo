@@ -418,14 +418,14 @@ func fillOnBoardModel() CoreOnBoarding {
 					"title":       "Step-1 : Basic Information",
 					"description": "Provide Some Basic Details About School",
 					"imageSrc":    "assets/icons/check_circled_filled.svg",
-					"routes":      "/onboard-user-step-1",
+					"routes":      "/onboard-user-basic-info",
 					"isClickable": true,
 				},
 				{
 					"title":       "Step-2 : Subjects Information",
 					"description": "Provide Some Basic Details About Subjects in School",
 					"imageSrc":    "assets/icons/close_circled_filled.svg",
-					"routes":      "/onboard-user-step-2",
+					"routes":      "/onboard-user-setup-subjects",
 					"isClickable": true,
 				},
 				{
@@ -439,14 +439,14 @@ func fillOnBoardModel() CoreOnBoarding {
 					"title":       "Step-4 : Student Information",
 					"description": "Provide Some Basic Details About Students Data",
 					"imageSrc":    "assets/icons/close_circled_filled.svg",
-					"routes":      "/onboard-user-step-3",
+					"routes":      "/onboard-user-student-onboarding",
 					"isClickable": true,
 				},
 			},
 		},
-		ExpiryCacheInAllowedTime:        "10",
+		ExpiryCacheInAllowedTime:        "1",
 		ExpiryCacheInAllowedTimeUnit:    "minutes",
-		ExpiryCacheInNotAllowedTime:     "10",
+		ExpiryCacheInNotAllowedTime:     "1",
 		ExpiryCacheInNotAllowedTimeUnit: "minutes",
 	}
 }
@@ -1242,7 +1242,9 @@ func main() {
 
 	e.GET("/image", handleImageProxy)
 
-	e.GET("/leaveRequest", LeaveHandler)
+	e.POST("/leaveRequest", LeaveHandler)
+
+	e.POST("/leaveRequestApprove", OnApproveLeaveHandler)
 
 	e.GET("/onboard", OnBoardHandler)
 
@@ -1257,6 +1259,8 @@ func main() {
 	e.POST("/onBoard-subject-admin", OnBoardHandlerSubjectData)
 
 	e.POST("/onBoard-bus-routes-admin", OnBoardHandlerSubjectData)
+
+	e.POST("/submit-enquiry-event", PostTestAPIMockResponse)
 
 	// Start worker pool
 	var wg sync.WaitGroup
@@ -1429,14 +1433,19 @@ func DropDownHandler(c echo.Context) error {
 	data := map[string]interface{}{
 		"data": map[string]interface{}{
 
-			"sessionDropDown": []string{"2023-24", "2024-25"},
-			"classes":         []string{"1", "2", "12"},
-			"boards":          []string{"CBSE", "HSE", "TSE", "USE"},
-			"gender":          []string{"MALE", "FEMALE"},
-			"religion":        []string{"HINDU", "MUSLIM"},
-			"caste":           []string{"GENERAL", "SC", "ST", "OBC"},
-			"status":          []string{"Active", "InActive"},
-			"school_type":     []string{"Higher Secondary Education", "Secondary School Certificate"},
+			"sessionDropDown":                 []string{"2023-24", "2024-25"},
+			"test-type-schedule-test":         []string{"Unit Test", "Class Test", "Surprise Test", "Half Yearly", "Final Exam"},
+			"classes":                         []string{"1", "2", "12"},
+			"boards":                          []string{"CBSE", "HSE", "TSE", "USE"},
+			"gender":                          []string{"MALE", "FEMALE"},
+			"religion":                        []string{"HINDU", "MUSLIM"},
+			"caste":                           []string{"GENERAL", "SC", "ST", "OBC"},
+			"enquiry-source":                  []string{"Source1", "Source2", "Source3", "Source4"},
+			"enquiry-preferred-communication": []string{"Call", "Message", "Email"},
+			"enquiry-status":                  []string{"Not Contacted", "Attempted to Contact", "Not Interested", "Contacted", "Junk Lead", "LOST", "Contact in Future", "Missed"},
+			"status":                          []string{"Active", "InActive"},
+			"leave-request-status":            []string{"Accepted", "Rejected", "Pending"},
+			"school_type":                     []string{"Higher Secondary Education", "Secondary School Certificate"},
 			"subjects": map[string][]string{
 				"1":  {"Hindi", "English"},
 				"2":  {"Math", "Science"},
@@ -2344,8 +2353,11 @@ func HomeworkHandler(c echo.Context) error {
 	// Return the JSON response
 	return c.JSON(http.StatusOK, response)
 }
-
-func LeaveHandler(c echo.Context) error {
+func OnApproveLeaveHandler(c echo.Context) error {
+	var creds map[string]interface{}
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request")
+	}
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
 		return c.JSON(http.StatusBadRequest, BaseResponse{
@@ -2402,17 +2414,290 @@ func LeaveHandler(c echo.Context) error {
 		})
 	}
 
-	// Fill the LeaveRequestPageModel
-	leaveRequestModel := fillLeaveRequestPageModel()
+	data := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"Approve":     "Approve",
+				"Reject":      "",
+				"Status":      "Rejected",
+				"Student":     "Banda 56",
+				"Section":     "10th A",
+				"RequestDate": "2024-04-03",
+				"FromDate":    "2024-04-04",
+				"ToDate":      "2024-04-07",
+				"Reason":      "Hai kuch 1",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+			{
+				"Approve":     "Approve",
+				"Reject":      "Reject",
+				"Status":      "pending",
+				"Student":     "Banda 2",
+				"Section":     "10th B",
+				"RequestDate": "2024-04-04",
+				"FromDate":    "2024-04-05",
+				"ToDate":      "2024-04-08",
+				"Reason":      "Hai kuch 2",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+			{
+				"Approve":     "Approve",
+				"Reject":      "Reject",
+				"Status":      "pending",
+				"Student":     "Banda 3",
+				"Section":     "10th C",
+				"RequestDate": "2024-04-05",
+				"FromDate":    "2024-04-06",
+				"ToDate":      "2024-04-09",
+				"Reason":      "Hai kuch 3",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+		},
+		"columns": []string{
+			"s.no",
+			"Approve",
+			"Reject",
+			"Student",
+			"Section",
+			"Request Date",
+			"From Date",
+			"To Date",
+			"Reason",
+			"Status",
+			"Remarks",
+		},
+		"currentPage": 1,
+		"pageSize":    20,
+		"totalPage":   2,
+	}
 
 	// Create the response
 	response := BaseResponse{
 		Status:  "SUCCESS",
 		Message: "Success",
-		Data:    leaveRequestModel,
+		Data:    data,
 	}
 	// Return the JSON response
 	return c.JSON(http.StatusOK, response)
+	// Fill the LeaveRequestPageModel
+}
+
+func PostTestAPIMockResponse(c echo.Context) error {
+	var creds map[string]interface{}
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request")
+	}
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	data := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"Approve":     "Approve",
+				"Reject":      "",
+				"Status":      "Rejected",
+				"Student":     "Banda 56",
+				"Section":     "10th A",
+				"RequestDate": "2024-04-03",
+				"FromDate":    "2024-04-04",
+				"ToDate":      "2024-04-07",
+				"Reason":      "Hai kuch 1",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+		},
+	}
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    data,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+	// Fill the LeaveRequestPageModel
+}
+
+func LeaveHandler(c echo.Context) error {
+	var creds map[string]interface{}
+	if err := c.Bind(&creds); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request")
+	}
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Authorization header missing",
+			Errors:  []string{"Authorization header missing"},
+		})
+	}
+
+	// Split the "Bearer" text from the token
+	tokenString := ""
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid Authorization header format",
+			Errors:  []string{"Invalid Authorization header format"},
+		})
+	}
+
+	// Verify the token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Invalid token",
+			Errors:  []string{"Invalid token"},
+		})
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.JSON(http.StatusBadRequest, BaseResponse{
+			Status:  "FAILED",
+			Message: "Invalid token claims",
+			Errors:  []string{"Invalid token claims"},
+		})
+	}
+
+	// Check if the token is expired
+	exp := int64(claims["exp"].(float64))
+	if time.Now().Unix() > exp {
+		return c.JSON(http.StatusUnauthorized, BaseResponse{
+			Status:  "UNAUTHORIZED",
+			Message: "Token expired",
+			Errors:  []string{"Token expired"},
+		})
+	}
+
+	data := map[string]interface{}{
+		"data": []map[string]interface{}{
+			{
+				"Approve":     "",
+				"Reject":      "Reject",
+				"Status":      "Approved",
+				"Student":     "Banda 1",
+				"Section":     "10th A",
+				"RequestDate": "2024-04-03",
+				"FromDate":    "2024-04-04",
+				"ToDate":      "2024-04-07",
+				"Reason":      "Hai kuch 1",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+			{
+				"Approve":     "Approve",
+				"Reject":      "Reject",
+				"Status":      "pending",
+				"Student":     "Banda 2",
+				"Section":     "10th B",
+				"RequestDate": "2024-04-04",
+				"FromDate":    "2024-04-05",
+				"ToDate":      "2024-04-08",
+				"Reason":      "Hai kuch 2",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+			{
+				"Approve":     "Approve",
+				"Reject":      "Reject",
+				"Status":      "pending",
+				"Student":     "Banda 3",
+				"Section":     "10th C",
+				"RequestDate": "2024-04-05",
+				"FromDate":    "2024-04-06",
+				"ToDate":      "2024-04-09",
+				"Reason":      "Hai kuch 3",
+				"Remarks":     "VPO MODA KHERA, MANDI PAADAMPUR",
+			},
+		},
+		"columns": []string{
+			"s.no",
+			"Approve",
+			"Reject",
+			"Student",
+			"Section",
+			"Request Date",
+			"From Date",
+			"To Date",
+			"Reason",
+			"Status",
+			"Remarks",
+		},
+		"currentPage": 1,
+		"pageSize":    20,
+		"totalPage":   2,
+	}
+
+	// Create the response
+	response := BaseResponse{
+		Status:  "SUCCESS",
+		Message: "Success",
+		Data:    data,
+	}
+	// Return the JSON response
+	return c.JSON(http.StatusOK, response)
+	// Fill the LeaveRequestPageModel
 }
 
 var indiaStates = map[string]map[string][]string{
